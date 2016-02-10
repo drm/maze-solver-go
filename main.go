@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"image"
     "bufio"
-    "io"
+    _ "io"
     "os"
 	"net/http"
 	"strconv"
@@ -220,32 +220,32 @@ func init() {
 }
 
 func main() {
-    var reader func() io.Reader
+    var reader func() (image.Image, string, error)
 	flag.Parse()
 
 	if conf.File != "" {
-        reader = func() io.Reader {
+        reader = func() (image.Image, string, error) {
             f, err := os.Open(conf.File)
             if err != nil {
                 panic(errors.New("Could not read file " + conf.File))
             }
             defer f.Close()
             
-            return bufio.NewReader(f)
+            return image.Decode(bufio.NewReader(f))
         }
     } else {
-        reader = func () io.Reader {
+        reader = func () (image.Image, string, error) {
             response, err := http.Get(conf.Url())
 
             if err != nil {
                 panic(errors.New("Could not read url " + conf.Url()))
             }
 
-            return response.Body
+            return image.Decode(response.Body)
         }
     }
 
-	i, _, err := image.Decode(reader())
+	i, _, err := reader()
 	if nil != err {
 		fmt.Println("Error reading file", err)
         return
