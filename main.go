@@ -1,13 +1,14 @@
 package main
 
 import (
-	_ "bufio"
 	"errors"
 	"flag"
 	"fmt"
 	"image"
+    "bufio"
+    "io"
+    "os"
 	"net/http"
-	_ "os"
 	"strconv"
 	"time"
 
@@ -26,8 +27,7 @@ const (
 )
 
 var (
-	conf     Conf
-	VIEWPORT = Vector{70, 30}
+	conf Conf
 )
 
 type Maze struct {
@@ -192,6 +192,7 @@ type Conf struct {
 	Maze     Vector
 	Left     bool
 	Right    bool
+    File     string
 }
 
 func (conf *Conf) Url() string {
@@ -215,16 +216,39 @@ func init() {
 	flag.IntVar(&conf.Maze.Y, "height", 10, "Maze height")
 	flag.BoolVar(&conf.Left, "left", false, "Prefer 'left hand'")
 	flag.BoolVar(&conf.Right, "right", false, "Prefer 'right hand'. Has no effect if left is passed.")
+    flag.StringVar(&conf.File, "file", "", "Load maze from a file in stead of URL")
 }
 
 func main() {
+    var reader func() io.Reader
 	flag.Parse()
 
-	response, _ := http.Get(conf.Url())
+	if conf.File != "" {
+        reader = func() io.Reader {
+            f, err := os.Open(conf.File)
+            if err != nil {
+                panic(errors.New("Could not read file " + conf.File))
+            }
+            defer f.Close()
+            
+            return bufio.NewReader(f)
+        }
+    } else {
+        reader = func () io.Reader {
+            response, err := http.Get(conf.Url())
 
-	i, _, err := image.Decode(response.Body)
+            if err != nil {
+                panic(errors.New("Could not read url " + conf.Url()))
+            }
+
+            return response.Body
+        }
+    }
+
+	i, _, err := image.Decode(reader())
 	if nil != err {
-		fmt.Println("Error reading file")
+		fmt.Println("Error reading file", err)
+        return
 	}
 
 	origin, extreme := i.Bounds().Min, i.Bounds().Max
@@ -272,7 +296,7 @@ func main() {
 		} else {
 			status = "Searching ..."
 		}
-		maze.Print(me, VIEWPORT, status)
+		maze.Print(me, conf.Viewport, status)
 	}
 	for !found {
 		if conf.Fps > 0 {
