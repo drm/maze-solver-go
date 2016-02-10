@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"image"
-	_ "io"
 	"net/http"
 	"os"
 	"strconv"
