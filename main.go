@@ -1,14 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"flag"
 	"fmt"
 	"image"
-    "bufio"
-    _ "io"
-    "os"
+	_ "io"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -192,7 +192,7 @@ type Conf struct {
 	Maze     Vector
 	Left     bool
 	Right    bool
-    File     string
+	File     string
 }
 
 func (conf *Conf) Url() string {
@@ -216,39 +216,39 @@ func init() {
 	flag.IntVar(&conf.Maze.Y, "height", 10, "Maze height")
 	flag.BoolVar(&conf.Left, "left", false, "Prefer 'left hand'")
 	flag.BoolVar(&conf.Right, "right", false, "Prefer 'right hand'. Has no effect if left is passed.")
-    flag.StringVar(&conf.File, "file", "", "Load maze from a file in stead of URL")
+	flag.StringVar(&conf.File, "file", "", "Load maze from a file in stead of URL")
 }
 
 func main() {
-    var reader func() (image.Image, string, error)
+	var reader func() (image.Image, string, error)
 	flag.Parse()
 
 	if conf.File != "" {
-        reader = func() (image.Image, string, error) {
-            f, err := os.Open(conf.File)
-            if err != nil {
-                panic(errors.New("Could not read file " + conf.File))
-            }
-            defer f.Close()
-            
-            return image.Decode(bufio.NewReader(f))
-        }
-    } else {
-        reader = func () (image.Image, string, error) {
-            response, err := http.Get(conf.Url())
+		reader = func() (image.Image, string, error) {
+			f, err := os.Open(conf.File)
+			if err != nil {
+				panic(errors.New("Could not read file " + conf.File))
+			}
+			defer f.Close()
 
-            if err != nil {
-                panic(errors.New("Could not read url " + conf.Url()))
-            }
+			return image.Decode(bufio.NewReader(f))
+		}
+	} else {
+		reader = func() (image.Image, string, error) {
+			response, err := http.Get(conf.Url())
 
-            return image.Decode(response.Body)
-        }
-    }
+			if err != nil {
+				panic(errors.New("Could not read url " + conf.Url()))
+			}
+
+			return image.Decode(response.Body)
+		}
+	}
 
 	i, _, err := reader()
 	if nil != err {
 		fmt.Println("Error reading file", err)
-        return
+		return
 	}
 
 	origin, extreme := i.Bounds().Min, i.Bounds().Max
