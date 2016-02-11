@@ -186,7 +186,7 @@ func (v Vector) turn(dir int) *Vector {
 }
 
 type Conf struct {
-	Fps, Mps time.Duration
+	Fps, Mps int
 	Viewport Vector
 	Maze     Vector
 	Left     bool
@@ -207,8 +207,8 @@ func (conf *Conf) Dir() int {
 
 func init() {
 	conf = Conf{}
-	flag.DurationVar(&conf.Fps, "fps", 6, "Frames per second to render")
-	flag.DurationVar(&conf.Mps, "mps", 30, "Movements per second. Set to 0 to go as fast as possible")
+	flag.IntVar(&conf.Fps, "fps", 6, "Frames per second to render")
+	flag.IntVar(&conf.Mps, "mps", 30, "Movements per second. Set to 0 to go as fast as possible")
 	flag.IntVar(&conf.Viewport.X, "viewport-width", 80, "Viewport width")
 	flag.IntVar(&conf.Viewport.Y, "viewport-height", 40, "Viewport height")
 	flag.IntVar(&conf.Maze.X, "width", 10, "Maze width")
@@ -280,7 +280,7 @@ func main() {
 				outside = false
 			}
 			if conf.Mps > 0 {
-				time.Sleep(time.Second / conf.Mps)
+				time.Sleep(time.Second / time.Duration(conf.Mps))
 			}
 		}
 	}()
@@ -300,7 +300,7 @@ func main() {
 	for !found {
 		if conf.Fps > 0 {
 			go print()
-			time.Sleep(time.Second / conf.Fps)
+			time.Sleep(time.Second / time.Duration(conf.Fps))
 		}
 	}
 	print()
