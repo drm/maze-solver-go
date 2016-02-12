@@ -10,185 +10,17 @@ import (
 	"os"
 	"strconv"
 	"time"
+    "maze"
 
 	_ "image/gif"
 )
 
-const (
-	WALL = true
-	PATH = false
-
-	STR_ME      = "\u263A"
-	STR_WALL    = "#"
-	STR_PATH    = " "
-	STR_NONE    = " "
-	STR_VISITED = "\u00B7"
-)
-
-var (
-	conf Conf
-)
-
-type Maze struct {
-	Px  [][]bool
-	Dim Vector
-}
-
-func NewMaze(w, h int) *Maze {
-	m := Maze{make([][]bool, w), Vector{w, h}}
-	for x := 0; x < w; x++ {
-		m.Px[x] = make([]bool, h)
-	}
-	return &m
-}
-
-func (m *Maze) At(x, y int) (bool, bool) {
-	if x < 0 || x >= m.Dim.X || y < 0 || y >= m.Dim.Y {
-		return false, false
-	}
-	return true, m.Px[x][y]
-}
-
-func (m *Maze) ch(x, y int) string {
-	valid, t := m.At(x, y)
-	if !valid {
-		return STR_NONE
-	} else if t == WALL {
-		return STR_WALL
-	} else {
-		return STR_PATH
-	}
-}
-
-func (m *Maze) Print(me *Me, viewport Vector, status string) {
-	ref := me.Pos
-	var ctr = Point{viewport.X / 2, viewport.Y / 2}
-	var trans = Vector{ref.X - ctr.X, ref.Y - ctr.Y}
-
-	fmt.Print("\033[H\033[2J")
-	for dy := 0; dy <= viewport.Y; dy++ {
-		for dx := 0; dx <= viewport.X; dx++ {
-			if ctr.X == dx && ctr.Y == dy {
-				fmt.Print(STR_ME)
-			} else {
-				x := dx + trans.X
-				y := dy + trans.Y
-				if me.Visited(x, y) {
-					fmt.Print(STR_VISITED)
-				} else {
-					fmt.Print(m.ch(x, y))
-				}
-			}
-		}
-		fmt.Print("\n")
-	}
-
-	fmt.Println(status)
-}
-
-type Me struct {
-	Pos       Point
-	Dir       Vector
-	positions []Point
-}
-
-func NewMe(dir int) *Me {
-	var m Me
-	if dir == 1 {
-		m = Me{Point{1, 0}, Vector{1, 0}, []Point{}}
-	} else {
-		m = Me{Point{0, 1}, Vector{0, 1}, []Point{}}
-	}
-	return &m
-}
-
-func (me *Me) Visited(x, y int) bool {
-	for _, v := range me.positions {
-		if v.X == x && v.Y == y {
-			return true
-		}
-	}
-	return false
-}
-
-func (me *Me) turnAround(maze *Maze) bool {
-	return me.try(maze, *me.Dir.turn(0))
-}
-
-func (me *Me) turn(maze *Maze, dir int) bool {
-	return me.try(maze, *me.Dir.turn(dir))
-}
-
-func (me *Me) forward(maze *Maze) bool {
-	return me.try(maze, me.Dir)
-}
-
-func (me *Me) try(maze *Maze, dir Vector) bool {
-	if _, t := maze.At(me.Pos.X+dir.X, me.Pos.Y+dir.Y); t != WALL {
-		me.Dir = dir
-		me.positions = append(me.positions, me.Pos)
-		me.Pos.X += dir.X
-		me.Pos.Y += dir.Y
-		return true
-	}
-	return false
-}
-
-func (me *Me) Move(maze *Maze) bool {
-	if me.turn(maze, conf.Dir()) {
-		return true
-	}
-	if me.forward(maze) {
-		return true
-	}
-	if me.turn(maze, conf.Dir()*-1) {
-		return true
-	}
-	if me.turnAround(maze) {
-		return true
-	}
-
-	return false
-}
-
-type Point struct {
-	X, Y int
-}
-type Vector struct {
-	X, Y int
-}
-
-func (v Vector) turn(dir int) *Vector {
-	if v.X != 0 {
-		if dir == 0 {
-			v.X *= -1
-		} else {
-			if v.X == 1 {
-				v.Y = 1 * dir
-			} else {
-				v.Y = -1 * dir
-			}
-			v.X = 0
-		}
-	} else {
-		if dir == 0 {
-			v.Y *= -1
-		} else {
-			if v.Y == 1 {
-				v.X = -1 * dir
-			} else {
-				v.X = 1 * dir
-			}
-			v.Y = 0
-		}
-	}
-	return &v
-}
+var conf Conf
 
 type Conf struct {
 	Fps, Mps int
-	Viewport Vector
-	Maze     Vector
+	Viewport maze.Vector
+	Maze     maze.Vector
 	Left     bool
 	Right    bool
 	File     string
@@ -198,11 +30,11 @@ func (conf *Conf) Url() string {
 	return fmt.Sprintf("http://www.hereandabove.com/cgi-bin/maze?%d+%d+1+1+5+0+0+0+255+255+255", conf.Maze.X, conf.Maze.Y)
 }
 
-func (conf *Conf) Dir() int {
+func (conf *Conf) Dir() maze.Hand {
 	if conf.Left {
-		return -1
+		return maze.LeftHand
 	}
-	return 1
+	return maze.RightHand
 }
 
 func init() {
@@ -251,16 +83,20 @@ func main() {
 	}
 
 	origin, extreme := i.Bounds().Min, i.Bounds().Max
-	maze := NewMaze(extreme.X-origin.X, extreme.Y-origin.Y)
+	m := maze.NewMaze(extreme.X-origin.X, extreme.Y-origin.Y)
+
+    // initialize the maze based on the colors in the image
 	for x := origin.X; x < extreme.X; x++ {
 		for y := origin.Y; y < extreme.Y; y++ {
 			r, _, _, _ := i.At(x, y).RGBA()
 			if r == 0 {
-				maze.Px[x-origin.X][y-origin.Y] = true
+				m.Px[x-origin.X][y-origin.Y] = maze.TWall
 			}
 		}
 	}
-	me := NewMe(conf.Dir())
+
+    // initialize the funny little guy
+	me := maze.NewMe(conf.Dir())
 
 	outside := true
 	status := ""
@@ -268,10 +104,10 @@ func main() {
 
 	go func() {
 		for !found {
-			if moved := me.Move(maze); !moved {
+			if moved := me.Move(m); !moved {
 				panic(errors.New("I'm stuck! Did the walls move?"))
 			}
-			if me.Pos.X == 0 || me.Pos.Y == 0 || me.Pos.X == maze.Dim.X-1 || me.Pos.Y == maze.Dim.Y-1 {
+			if m.Edge(me.Pos) {
 				if !outside {
 					found = true
 				}
@@ -290,12 +126,12 @@ func main() {
 			if !found {
 				status = "Looking for entrance ..."
 			} else {
-				status = "Found it! It took me " + strconv.Itoa(len(me.positions)) + " steps get there"
+				status = "Found it! It took me " + strconv.Itoa(me.NumSteps()) + " steps get there"
 			}
 		} else {
 			status = "Searching ..."
 		}
-		maze.Print(me, conf.Viewport, status)
+		m.Print(me, conf.Viewport, status)
 	}
 	for !found {
 		if conf.Fps > 0 {
