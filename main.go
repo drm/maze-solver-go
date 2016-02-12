@@ -6,11 +6,11 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	"maze"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
-    "maze"
 
 	_ "image/gif"
 )
@@ -85,7 +85,7 @@ func main() {
 	origin, extreme := i.Bounds().Min, i.Bounds().Max
 	m := maze.NewMaze(extreme.X-origin.X, extreme.Y-origin.Y)
 
-    // initialize the maze based on the colors in the image
+	// initialize the maze based on the colors in the image
 	for x := origin.X; x < extreme.X; x++ {
 		for y := origin.Y; y < extreme.Y; y++ {
 			r, _, _, _ := i.At(x, y).RGBA()
@@ -95,7 +95,7 @@ func main() {
 		}
 	}
 
-    // initialize the funny little guy
+	// initialize the funny little guy
 	me := maze.NewMe(conf.Dir())
 
 	outside := true

@@ -7,24 +7,24 @@ import (
 type tile int
 
 const (
-    TNone     tile = iota
+	TNone tile = iota
 	TWall
 	TPath
-    TMe
-    TVisited
+	TMe
+	TVisited
 )
 
 var (
-    chars map[tile]rune
+	chars map[tile]rune
 )
 
 func init() {
-    chars = make(map[tile]rune)
-    chars[TWall] = '#' 
-    chars[TPath] = ' '
-    chars[TMe] = '\u263A'
-    chars[TNone] = ' '
-    chars[TVisited] = '\u00B7'
+	chars = make(map[tile]rune)
+	chars[TWall] = '#'
+	chars[TPath] = ' '
+	chars[TMe] = '\u263A'
+	chars[TNone] = ' '
+	chars[TVisited] = '\u00B7'
 }
 
 // Maze represents a two-dimensional matrix [][]Px containing the state of each
@@ -52,12 +52,12 @@ func (m *Maze) At(x, y int) (bool, tile) {
 }
 
 func (m *Maze) Edge(p Point) bool {
-    return p.X == 0 || p.Y == 0 || p.X == m.Dim.X -1 || p.Y == m.Dim.Y -1
+	return p.X == 0 || p.Y == 0 || p.X == m.Dim.X-1 || p.Y == m.Dim.Y-1
 }
 
 func (m *Maze) Movable(p Point, v Vector) bool {
-    _, t := m.At(p.X + v.X, p.Y + v.Y)
-    return t != TWall
+	_, t := m.At(p.X+v.X, p.Y+v.Y)
+	return t != TWall
 }
 
 // return the render character at the position (x, y)
@@ -98,4 +98,3 @@ func (m *Maze) Print(me *Me, viewport Vector, status string) {
 
 	fmt.Println(status)
 }
-

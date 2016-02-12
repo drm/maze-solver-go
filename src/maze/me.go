@@ -1,13 +1,12 @@
 package maze
 
-
 // "Me" is the cute little fellow that walks the maze
-// Pos identifies the current position, Dir identifies the intended movement 
+// Pos identifies the current position, Dir identifies the intended movement
 // vector, and positions is a slice of all previously visited points
 type Me struct {
 	Pos           Point
 	Dir           Vector
-    PreferredHand Hand
+	PreferredHand Hand
 	positions     []Point
 }
 
@@ -32,9 +31,8 @@ func (me *Me) Visited(x, y int) bool {
 	return false
 }
 
-
 func (me *Me) NumSteps() int {
-    return len(me.positions)
+	return len(me.positions)
 }
 
 // Try to turn around. Fails if the tile behind the current position
@@ -43,14 +41,14 @@ func (me *Me) turnAround(maze *Maze) bool {
 	return me.try(maze, *me.Dir.turn(0))
 }
 
-// Try to turn in the direction dir. Fails if the tile right or left 
+// Try to turn in the direction dir. Fails if the tile right or left
 // (depending the value of `dir`) is a wall
 func (me *Me) turn(maze *Maze, dir Hand) bool {
 	return me.try(maze, *me.Dir.turn(int(dir)))
 }
 
 // Try to move one step in the current direction
-// Fails if the next tile in the current direction is a wall 
+// Fails if the next tile in the current direction is a wall
 func (me *Me) forward(maze *Maze) bool {
 	return me.try(maze, me.Dir)
 }
@@ -87,4 +85,3 @@ func (me *Me) Move(maze *Maze) bool {
 
 	return false
 }
-
