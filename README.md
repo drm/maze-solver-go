@@ -3,6 +3,7 @@
 You can run it by cloning the repo and just
 
 ```
+export GOPATH=$(pwd)
 go run main.go
 ```
 

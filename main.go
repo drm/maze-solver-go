@@ -6,13 +6,14 @@ import (
 	"flag"
 	"fmt"
 	"image"
-	"maze"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	_ "image/gif"
+
+	"maze"
 )
 
 var conf Conf
