@@ -5,3 +5,4 @@ build:
   commands:
     - GOPATH=$(pwd) go get github.com/stretchr/testify/assert
     - GOPATH=$(pwd) go test maze
+    - GOPATH=$(pwd) go build
