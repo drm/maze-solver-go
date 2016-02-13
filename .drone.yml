@@ -3,5 +3,5 @@ build:
   environment:
     - GO15VENDOREXPERIMENT=1
   commands:
-    - go get github.com/stretchr/testify/assert
+    - GOPATH=$(pwd) go get github.com/stretchr/testify/assert
     - GOPATH=$(pwd) go test maze
