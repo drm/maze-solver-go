@@ -2,6 +2,7 @@ package maze
 
 import (
 	"fmt"
+    "image"
 )
 
 type tile int
@@ -35,12 +36,27 @@ type Maze struct {
 }
 
 // Zero-construct a new maze of dimensions w x h
-func NewMaze(w, h int) *Maze {
+func NewMaze(w, h int, initializer func (x, y int, t *tile)) *Maze {
 	m := Maze{make([][]tile, w), Vector{w, h}}
 	for x := 0; x < w; x++ {
 		m.Px[x] = make([]tile, h)
+        for y := 0; y < h; y ++ {
+            initializer(x, y, &m.Px[x][y])
+        }
 	}
 	return &m
+}
+
+func NewMazeFromImage(i image.Image) *Maze {
+	origin, extreme := i.Bounds().Min, i.Bounds().Max
+	m := NewMaze(extreme.X-origin.X, extreme.Y-origin.Y, func(x, y int, t *tile) {
+        r, _, _, _ := i.At(x + origin.X, y + origin.Y).RGBA()
+        if r == 0 {
+            *t = TWall
+        }
+    })
+
+    return m
 }
 
 // Get the type of coordinate at (x, y)
