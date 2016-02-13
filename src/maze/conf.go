@@ -39,4 +39,3 @@ func init() {
 	flag.BoolVar(&Settings.Right, "right", false, "Prefer 'right hand'. Has no effect if left is passed.")
 	flag.StringVar(&Settings.File, "file", "", "Load maze from a file in stead of URL")
 }
-

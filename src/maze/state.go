@@ -1,6 +1,6 @@
 package maze
 
 type State struct {
-    Solved bool
-    Outside bool
+	Solved  bool
+	Outside bool
 }

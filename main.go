@@ -18,7 +18,7 @@ import (
 var conf maze.Conf
 
 func init() {
-    conf = maze.Settings
+	conf = maze.Settings
 }
 
 func main() {
@@ -54,19 +54,19 @@ func main() {
 		return
 	}
 
-    m := maze.NewMazeFromImage(i)
+	m := maze.NewMazeFromImage(i)
 
 	// initialize the funny little guy
 	me := maze.NewMe(conf.Dir())
 
 	state := maze.State{false, true}
 
-    go maze.Solver(&state, m, me, conf.Mps)
-    for !state.Solved {
+	go maze.Solver(&state, m, me, conf.Mps)
+	for !state.Solved {
 		if conf.Fps > 0 {
 			go maze.Reporter(&state, me, m, conf.Viewport)
 			time.Sleep(time.Second / time.Duration(conf.Fps))
 		}
-    }
+	}
 	maze.Reporter(&state, me, m, conf.Viewport)
 }
