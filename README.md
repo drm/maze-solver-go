@@ -1,5 +1,4 @@
 # Maze solver #
-[![Build Status](http://192.168.90.25:8000/api/badges/gerard/dev-challenge-maze-solver/status.svg)](http://192.168.90.25:8000/gerard/dev-challenge-maze-solver)
 
 You can run it by cloning the repo and just
 
